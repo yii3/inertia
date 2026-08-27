@@ -85,12 +85,23 @@ final class RootViewRendererTest extends TestCase
 
     public function testMissingRootViewUsesYiiViewException(): void
     {
-        $renderer = $this->renderer('/missing/inertia-root-view.php');
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'missing-inertia-view-');
+
+        self::assertNotFalse(
+            $temporaryPath,
+            'Temporary path for the missing view must be created.',
+        );
+        self::assertTrue(
+            unlink($temporaryPath),
+            'Temporary file for the missing view must be removed.',
+        );
+
+        $rootView = "{$temporaryPath}.php";
+
+        $renderer = $this->renderer($rootView);
 
         $this->expectException(ViewNotFoundException::class);
-        $this->expectExceptionMessage(
-            '/missing/inertia-root-view.php',
-        );
+        $this->expectExceptionMessage($rootView);
 
         $renderer->render(new Page('Home', [], '/', ''));
     }
@@ -98,6 +109,7 @@ final class RootViewRendererTest extends TestCase
     public function testRootViewAliasIsResolvedBeforeYiiViewRendering(): void
     {
         $path = $this->createView('resolved');
+
         $aliases = new Aliases(['@rootView' => dirname($path)]);
 
         try {
