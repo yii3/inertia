@@ -200,16 +200,22 @@ return [
 ];
 ```
 
-During development, replace the production configuration with the native development configuration:
+During development, register the native development service:
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 use PHPForge\Vite\Configuration\DevelopmentConfiguration;
 use PHPForge\Vite\Vite;
 
-$vite = Vite::create(
-    DevelopmentConfiguration::create('http://localhost:5173'),
-    entrypoints: ['resources/js/app.ts'],
-);
+return [
+    Vite::class => static fn(): Vite => Vite::create(
+        DevelopmentConfiguration::create('http://localhost:5173'),
+        entrypoints: ['resources/js/app.ts'],
+    ),
+];
 ```
 
 React applications may pass an application-owned `InlineModuleProviderInterface` implementation to

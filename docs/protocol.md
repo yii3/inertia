@@ -18,8 +18,9 @@ captured explicitly by application code.
 
 ## Responses
 
-Inertia requests receive JSON plus `X-Inertia: true`. Initial browser visits receive the common HTML root view rendered
-through the configured Yii `WebView`. Every response varies on `X-Inertia`, while preserving existing `Vary` tokens.
+Successful Inertia page responses receive JSON plus `X-Inertia: true`. Initial browser visits receive the common HTML
+root view rendered through the configured Yii `WebView`. Every response varies on `X-Inertia`, while preserving existing
+`Vary` tokens.
 Inertia PUT, PATCH, and DELETE redirects with status 302 are normalized to 303 by the protocol core; status 301 remains
 unchanged.
 
