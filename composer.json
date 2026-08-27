@@ -1,0 +1,57 @@
+{
+    "name": "yii2-extensions/template",
+    "type": "library",
+    "description": "_____",
+    "keywords": [
+        "_____"
+    ],
+    "license": "BSD-3-Clause",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.3",
+        "yiisoft/yii2": "^22"
+    },
+    "require-dev": {
+        "infection/infection": "^0.35",
+        "maglnet/composer-require-checker": "^4.1",
+        "php-forge/coding-standard": "^0.3",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0.3",
+        "phpunit/phpunit": "^12.5",
+        "yii2-extensions/phpstan": "^0.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "yii\\template\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "yii\\template\\tests\\": "tests"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.0.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true,
+            "phpstan/extension-installer": true,
+            "yiisoft/yii2-composer": true
+        }
+    },
+    "scripts": {
+        "check-dependencies": "./vendor/bin/composer-require-checker check",
+        "ecs": "./vendor/bin/ecs --fix",
+        "mutation": "./vendor/bin/infection --threads=4 --ignore-msi-with-no-mutations --min-msi=100 --min-covered-msi=100",
+        "mutation-static": "./vendor/bin/infection --threads=4 --ignore-msi-with-no-mutations --min-msi=100 --min-covered-msi=100 --static-analysis-tool=phpstan --static-analysis-tool-options='--memory-limit=-1'",
+        "rector": "./vendor/bin/rector process",
+        "static": "./vendor/bin/phpstan --memory-limit=-1",
+        "tests": "./vendor/bin/phpunit"
+    }
+}
