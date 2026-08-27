@@ -11,7 +11,7 @@
   stopOnFailure="false"
 >
   <testsuites>
-    <testsuite name="Package-Name">
+    <testsuite name="Yii3-Inertia">
       <directory>tests</directory>
     </testsuite>
   </testsuites>

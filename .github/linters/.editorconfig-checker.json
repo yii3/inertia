@@ -1,7 +1,5 @@
 {
     "Exclude": [
-        "^composer\\.lock$",
-        "^runtime/",
-        "^vendor/"
+        "^scaffold-lock\\.json$"
     ]
 }
