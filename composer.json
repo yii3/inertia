@@ -1,40 +1,78 @@
 {
-    "name": "yii2-extensions/template",
+    "name": "yii3/inertia",
     "type": "library",
-    "description": "_____",
+    "description": "Inertia.js v3 server-side integration for Yii3.",
     "keywords": [
-        "_____"
+        "inertia",
+        "php",
+        "psr-15",
+        "server-driven",
+        "spa",
+        "yii3"
     ],
     "license": "BSD-3-Clause",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Wilmer Arambula",
+            "email": "terabytesoftw@gmail.com",
+            "homepage": "https://github.com/terabytesoftw",
+            "role": "Developer"
+        }
+    ],
     "require": {
         "php": ">=8.3",
-        "yiisoft/yii2": "^22"
+        "php-forge/inertia": "^0.2",
+        "php-forge/vite": "^0.2",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^1.1 || ^2.0",
+        "psr/http-server-handler": "^1.0",
+        "psr/http-server-middleware": "^1.0",
+        "yiisoft/aliases": "^3.1",
+        "yiisoft/cookies": "^1.2",
+        "yiisoft/csrf": "^2.2",
+        "yiisoft/json": "^1.1",
+        "yiisoft/request-provider": "^1.3",
+        "yiisoft/session": "^3.0",
+        "yiisoft/view": "^12.2"
     },
     "require-dev": {
+        "httpsoft/http-message": "^1.1",
         "infection/infection": "^0.35",
         "maglnet/composer-require-checker": "^4.1",
+        "php-forge/baseline": "^0.2",
         "php-forge/coding-standard": "^0.3",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0.3",
         "phpunit/phpunit": "^12.5",
-        "yii2-extensions/phpstan": "^0.4"
+        "yii2-extensions/scaffold": "^0.2"
     },
     "autoload": {
         "psr-4": {
-            "yii\\template\\": "src"
+            "Yii3\\Inertia\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "yii\\template\\tests\\": "tests"
+            "Yii3\\Inertia\\Tests\\": "tests"
         }
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "1.0.x-dev"
+            "dev-main": "0.1.x-dev"
+        },
+        "config-plugin-options": {
+            "source-directory": "config"
+        },
+        "config-plugin": {
+            "params": "params.php",
+            "di-web": "di-web.php"
+        },
+        "scaffold": {
+            "allowed-packages": [
+                "php-forge/baseline",
+                "php-forge/coding-standard"
+            ]
         }
     },
     "config": {
@@ -42,14 +80,17 @@
         "allow-plugins": {
             "infection/extension-installer": true,
             "phpstan/extension-installer": true,
-            "yiisoft/yii2-composer": true
+            "yii2-extensions/scaffold": true
         }
     },
     "scripts": {
         "check-dependencies": "./vendor/bin/composer-require-checker check",
         "ecs": "./vendor/bin/ecs --fix",
-        "mutation": "./vendor/bin/infection --threads=4 --ignore-msi-with-no-mutations --min-msi=100 --min-covered-msi=100",
-        "mutation-static": "./vendor/bin/infection --threads=4 --ignore-msi-with-no-mutations --min-msi=100 --min-covered-msi=100 --static-analysis-tool=phpstan --static-analysis-tool-options='--memory-limit=-1'",
+        "mutation": "php -d memory_limit=-1 vendor/bin/infection --threads=4 --ignore-msi-with-no-mutations --min-msi=100 --min-covered-msi=100",
+        "mutation-static": [
+            "Composer\\Config::disableProcessTimeout",
+            "php -d memory_limit=-1 vendor/bin/infection --threads=4 --ignore-msi-with-no-mutations --min-msi=100 --min-covered-msi=100 --static-analysis-tool=phpstan --static-analysis-tool-options='--memory-limit=-1'"
+        ],
         "rector": "./vendor/bin/rector process",
         "static": "./vendor/bin/phpstan --memory-limit=-1",
         "tests": "./vendor/bin/phpunit"

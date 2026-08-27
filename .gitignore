@@ -1,6 +1,7 @@
-# AI agents (if present)
-.codex
+# Local AI agent, editor, and GitHub CLI config (if present)
 .claude
+.codex
+.config/gh
 
 # codecoverage (if present)
 code_coverage
@@ -11,7 +12,7 @@ c3.php
 # composer
 composer.lock
 
-# gitHub copilot config (if present)
+# GitHub Copilot config (if present)
 .github/agents/**
 .github/copilot-instructions.md
 .github/copilot/**
@@ -28,13 +29,12 @@ nbproject
 # node_modules (if present)
 node_modules
 package-lock.json
-!src/assets/package-lock.json
-
-# phpactor (if present)
-.phpactor.*
 
 # phpstorm project (if present)
 .idea
+
+# phpactor (if present)
+.phpactor.*
 
 # phpunit (if present)
 .phpunit.cache

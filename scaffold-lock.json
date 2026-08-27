@@ -1,0 +1,80 @@
+{
+    "providers": {
+        "php-forge/baseline": {
+            "version": "0.2.0",
+            "path": "vendor/php-forge/baseline"
+        },
+        "php-forge/coding-standard": {
+            "version": "0.3.3",
+            "path": "vendor/php-forge/coding-standard"
+        }
+    },
+    "files": {
+        ".editorconfig": {
+            "hash": "sha256:f0cafe474d79d769f397f2e8839c642ca3ef1a0ce38b6e9f82ed9e49bccf84f6",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.editorconfig",
+            "mode": "append"
+        },
+        ".gitattributes": {
+            "hash": "sha256:88b62c371df01eac6e0298625a03baee372bd4048a6452cc2a1aeee0d49eba10",
+            "provider": "php-forge/baseline",
+            "source": "metadata/gitattributes",
+            "mode": "replace"
+        },
+        ".gitignore": {
+            "hash": "sha256:7d7753b2cc6184d74fb22f78c6b351b6c9c9dc04bcabe5481a0ed64b06858597",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.gitignore",
+            "mode": "append"
+        },
+        ".styleci.yml": {
+            "hash": "sha256:825f8c744ffbd2bc2369712e7192b8694129a8ecbc3fd91dc9300fccecf827bd",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.styleci.yml",
+            "mode": "replace"
+        },
+        "composer-require-checker.json": {
+            "hash": "sha256:0cc82e1bb44b9b090ea8ff2f5c6ee51605d031eb8ac6ae8042a8584c2f14c91a",
+            "provider": "php-forge/baseline",
+            "source": "metadata/composer-require-checker.json",
+            "mode": "preserve"
+        },
+        ".github/linters/.codespellrc": {
+            "hash": "sha256:0ec9825d6022c7b0edcdbc6f8a8e3fdea30bbd65f76084cc9f046bdd432bdc1f",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.github/linters/.codespellrc",
+            "mode": "replace"
+        },
+        ".github/linters/.editorconfig-checker.json": {
+            "hash": "sha256:17587db6b4d163e43b47dd1f55809b2ab6f3a2d9b170ca88fdd23d703feb3064",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.github/linters/.editorconfig-checker.json",
+            "mode": "replace"
+        },
+        ".github/linters/.gitleaks.toml": {
+            "hash": "sha256:4016e5e7237b525fd32eaf50c10577c21f452863ce95a901c059fb90d6b9318a",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.github/linters/.gitleaks.toml",
+            "mode": "replace"
+        },
+        ".github/linters/.markdown-lint.yml": {
+            "hash": "sha256:5d41c7471e15fea1b307a39791436179c5db6ae7c7daf00042d21750117bead4",
+            "provider": "php-forge/baseline",
+            "source": "metadata/.github/linters/.markdown-lint.yml",
+            "mode": "replace"
+        },
+        "ecs.php": {
+            "hash": "sha256:7eff5e4cb7b2f0334a3ea1ed38784334a3c49587848a6c585954d48ce2d50814",
+            "provider": "php-forge/coding-standard",
+            "source": "src/config/ecs.php",
+            "mode": "preserve"
+        },
+        "rector.php": {
+            "hash": "sha256:8d1e1de6ee67e914b8d899b07b541fb390dc9c9e72e2c11eebb4d1b344bb855a",
+            "provider": "php-forge/coding-standard",
+            "source": "src/config/rector.php",
+            "mode": "preserve"
+        }
+    }
+}
