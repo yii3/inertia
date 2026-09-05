@@ -8,3 +8,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.1.0 Under development
 
 - feat: initial release of the Yii3 server-side adapter for `Inertia.js` `v3`.
+- feat: provide a named portable resolved-page observer while preserving the existing observer interface and method signatures.

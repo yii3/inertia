@@ -316,3 +316,12 @@ For detailed configuration options and advanced usage.
 ## License
 
 [![License](https://img.shields.io/badge/License-BSD--3--Clause-brightgreen.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=555555)](LICENSE)
+
+## Resolved-page observation
+
+`PHPForge\Inertia\ResolvedPageObserver` forwards the resolved page payload and shared-prop keys to a callback.
+Observer failures propagate to the caller; the observer does not mutate pages or hide callback failures.
+
+Yii3 exposes the named `Yii3\Inertia\ResolvedPageObserver`, which implements the existing
+`ResolvedPageObserverInterface`. Pass it to `withPageObserver()` or register it under that interface in DI.
+Existing observers and signatures remain supported. This integration requires the core 0.3 development line.
