@@ -21,8 +21,8 @@
     ],
     "require": {
         "php": ">=8.3",
-        "php-forge/inertia": "^0.2",
-        "php-forge/vite": "^0.2",
+        "php-forge/inertia": "^0.3",
+        "php-forge/vite": "^0.3",
         "psr/http-factory": "^1.1",
         "psr/http-message": "^1.1 || ^2.0",
         "psr/http-server-handler": "^1.0",

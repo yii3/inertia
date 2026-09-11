@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yii3\Inertia;
 
 use Closure;
-use PHPForge\Inertia\{PageInput, Protocol};
+use PHPForge\Inertia\{Header, PageInput, Protocol};
 use PHPForge\Inertia\Result\{
     FragmentRedirectResult,
     InertiaPageResult,
@@ -130,13 +130,13 @@ final class Inertia
         $context = $this->requestContextFactory->create($request);
 
         if (!$context->isInertia()) {
-            return $this->mergeVary($response, 'X-Inertia');
+            return $this->mergeVary($response, Header::INERTIA->value);
         }
 
         $location = $response->getHeaderLine('Location');
 
         if ($location === '' || !in_array($response->getStatusCode(), [301, 302, 303, 307, 308], true)) {
-            return $this->mergeVary($response, 'X-Inertia');
+            return $this->mergeVary($response, Header::INERTIA->value);
         }
 
         $result = $this->protocol->redirect($context, $location, $response->getStatusCode());
@@ -144,7 +144,7 @@ final class Inertia
         if ($result instanceof FragmentRedirectResult) {
             $response = $response
                 ->withoutHeader('Location')
-                ->withoutHeader('X-Inertia')
+                ->withoutHeader(Header::INERTIA->value)
                 ->withoutHeader('Content-Length')
                 ->withBody($this->streamFactory->createStream());
         }

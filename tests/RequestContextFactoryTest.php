@@ -6,7 +6,7 @@ namespace Yii3\Inertia\Tests;
 
 use HttpSoft\Message\ServerRequest;
 use PHPForge\Inertia\Exception\InvalidRequestContextException;
-use PHPForge\Inertia\RequestContext;
+use PHPForge\Inertia\Header;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Yii3\Inertia\RequestContextFactory;
@@ -49,16 +49,16 @@ final class RequestContextFactoryTest extends TestCase
 
         foreach (
             [
-                RequestContext::HEADER_ERROR_BAG => 'profile',
-                RequestContext::HEADER_EXCEPT_ONCE_PROPS => 'countries',
-                RequestContext::HEADER_INERTIA => '1',
-                RequestContext::HEADER_INFINITE_SCROLL_MERGE_INTENT => 'prepend',
-                RequestContext::HEADER_PARTIAL_COMPONENT => 'Users',
-                RequestContext::HEADER_PARTIAL_DATA => 'users',
-                RequestContext::HEADER_PARTIAL_EXCEPT => 'private',
-                RequestContext::HEADER_PURPOSE => 'prefetch',
-                RequestContext::HEADER_RESET => 'users',
-                RequestContext::HEADER_VERSION => 'v2',
+                Header::ERROR_BAG->value => 'profile',
+                Header::EXCEPT_ONCE_PROPS->value => 'countries',
+                Header::INERTIA->value => '1',
+                Header::INFINITE_SCROLL_MERGE_INTENT->value => 'prepend',
+                Header::PARTIAL_COMPONENT->value => 'Users',
+                Header::PARTIAL_DATA->value => 'users',
+                Header::PARTIAL_EXCEPT->value => 'private',
+                Header::PURPOSE->value => 'prefetch',
+                Header::RESET->value => 'users',
+                Header::VERSION->value => 'v2',
             ] as $name => $value
         ) {
             $request = $request->withHeader($name, $value);
