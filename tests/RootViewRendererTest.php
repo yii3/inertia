@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Yii3\Inertia\Tests;
 
 use PHPForge\Inertia\Page;
-use PHPForge\Vite\Configuration\DevelopmentConfiguration;
-use PHPForge\Vite\Vite;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Yii3\Inertia\RootViewRenderer;
@@ -18,6 +16,7 @@ use function basename;
 use function dirname;
 use function file_put_contents;
 use function rename;
+use function strpos;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -25,6 +24,8 @@ use function unlink;
 #[Group('view')]
 final class RootViewRendererTest extends TestCase
 {
+    private const string DEFAULT_ROOT_VIEW = __DIR__ . '/../resources/views/app.php';
+
     public function testConfigurationMethodsAreImmutable(): void
     {
         $path = $this->createView('<?= $id ?>|<?= $language ?>|<?= $charset ?>|<?= $title ?>');
@@ -83,6 +84,17 @@ final class RootViewRendererTest extends TestCase
         );
     }
 
+    public function testDefaultRootViewLeavesNoUnresolvedViewPlaceholders(): void
+    {
+        $html = $this->renderer(self::DEFAULT_ROOT_VIEW)->render(new Page('Home', [], '/', ''));
+
+        self::assertStringNotContainsString(
+            '<![CDATA[YII-BLOCK-',
+            $html,
+            'Placeholders must be substituted.',
+        );
+    }
+
     public function testMissingRootViewUsesYiiViewException(): void
     {
         $temporaryPath = tempnam(sys_get_temp_dir(), 'missing-inertia-view-');
@@ -104,6 +116,43 @@ final class RootViewRendererTest extends TestCase
         $this->expectExceptionMessage($rootView);
 
         $renderer->render(new Page('Home', [], '/', ''));
+    }
+
+    public function testRegisteredAssetsAreInjectedIntoDefaultRootViewPlaceholders(): void
+    {
+        $view = new WebView();
+
+        $view->registerCssFile('/build/app.css');
+        $view->registerJsFile('/build/app.js', options: ['type' => 'module']);
+        $view->registerLink(['rel' => 'modulepreload', 'href' => '/build/vendor.js']);
+
+        $html = $this->renderer(self::DEFAULT_ROOT_VIEW, view: $view)->render(new Page('Home', [], '/', ''));
+
+        self::assertStringContainsString(
+            '<link rel="stylesheet" href="/build/app.css">',
+            $html,
+            'Stylesheet must reach the document.',
+        );
+        self::assertStringContainsString(
+            '<link rel="modulepreload" href="/build/vendor.js">',
+            $html,
+            'Preload hint must reach the document.',
+        );
+        self::assertStringContainsString(
+            '<script src="/build/app.js" type="module"></script>',
+            $html,
+            'Module script must reach the document.',
+        );
+        self::assertLessThan(
+            strpos($html, '</head>'),
+            strpos($html, '/build/app.css'),
+            'Stylesheet must land in the head placeholder.',
+        );
+        self::assertGreaterThan(
+            strpos($html, '<div id="app"></div>'),
+            strpos($html, '/build/app.js'),
+            'Module script must land in the body-end placeholder.',
+        );
     }
 
     public function testRootViewAliasIsResolvedBeforeYiiViewRendering(): void
@@ -174,15 +223,14 @@ final class RootViewRendererTest extends TestCase
         return $path;
     }
 
-    private function renderer(string $rootView, Aliases|null $aliases = null): RootViewRenderer
-    {
+    private function renderer(
+        string $rootView,
+        Aliases|null $aliases = null,
+        WebView|null $view = null,
+    ): RootViewRenderer {
         $rootViewRenderer = new RootViewRenderer(
             aliases: $aliases ?? new Aliases(),
-            view: new WebView(),
-            vite: Vite::create(
-                DevelopmentConfiguration::create('http://localhost:5173'),
-                entrypoints: ['resources/js/app.js'],
-            ),
+            view: $view ?? new WebView(),
         );
 
         return $rootViewRenderer->withRootView($rootView);

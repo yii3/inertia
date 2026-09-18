@@ -40,10 +40,11 @@ The packages have deliberately separate responsibilities:
 - [`php-forge/inertia`](https://github.com/php-forge/inertia) implements the framework-agnostic protocol, page model,
   prop resolution, headers, redirects, and result objects.
 - `yii3/inertia` adapts Yii3 request, response, session, and view services to that core.
-- [`php-forge/vite`](https://github.com/php-forge/vite) provides framework-agnostic Vite manifest and development
-  server support for the initial document.
 
-React and Vue remain application concerns; this adapter does not ship framework-specific JavaScript packages.
+Asset emission is an application concern. The adapter renders no script or link tags of its own; the default root view
+marks Yii's head and body placeholders, so whatever the application registers on `Yiisoft\View\WebView` reaches the
+initial document. React, Vue, and the build tool remain application choices, and this adapter ships no
+framework-specific JavaScript packages.
 
 ## Requirements
 
@@ -53,7 +54,6 @@ React and Vue remain application concerns; this adapter does not ship framework-
 - `yiisoft/request-body-parser` for JSON form submissions.
 - `yiisoft/view` for rendering the initial HTML document through the application web view.
 - `php-forge/inertia` for the framework-neutral Inertia protocol and prop types.
-- `php-forge/vite` for framework-neutral asset resolution.
 
 ## Installation
 
@@ -61,7 +61,7 @@ Applications should declare the adapter, the native PHP Forge packages they use,
 direct dependencies:
 
 ```shell
-composer require yii3/inertia:^0.1 php-forge/inertia:^0.2 php-forge/vite:^0.2 yiisoft/request-body-parser:^1.2
+composer require yii3/inertia:^0.1 php-forge/inertia:^0.5 yiisoft/request-body-parser:^1.2
 ```
 
 For a local sibling checkout, add a Composer path repository:
@@ -80,8 +80,7 @@ For a local sibling checkout, add a Composer path repository:
     ],
     "require": {
         "yii3/inertia": "dev-main",
-        "php-forge/inertia": "^0.2",
-        "php-forge/vite": "^0.2",
+        "php-forge/inertia": "^0.5",
         "yiisoft/request-body-parser": "^1.2"
     }
 }
@@ -173,11 +172,29 @@ The configured root-view alias is resolved with `Yiisoft\Aliases\Aliases` and re
 `Yiisoft\View\WebView`. Custom root views therefore use Yii's configured renderers, themes, common parameters, and
 render events instead of a package-owned PHP file loader.
 
-## Vite integration
+## Assets
 
-The application owns its Vite mode and entrypoints. Define the native `PHPForge\Vite\Vite` service directly; the
-package injects it into `RootViewRenderer`, which renders the resulting assets with the native stateless
-`HtmlRenderer`.
+The adapter emits no asset tags. The default root view marks Yii's head and body placeholders, so anything registered
+on the application `Yiisoft\View\WebView` before the response is rendered reaches the initial document:
+
+```php
+$view->registerCssFile('/build/app.css');
+$view->registerJsFile('/build/app.js', options: ['type' => 'module']);
+$view->registerLink(['rel' => 'modulepreload', 'href' => '/build/vendor.js']);
+```
+
+Stylesheets and links land in `<head>`; scripts land at the end of `<body>` unless another position is requested.
+`yiisoft/assets` bundles work the same way through `WebView::addCssFiles()` and `WebView::addJsFiles()`.
+
+### Vite
+
+Install [`php-forge/vite`](https://github.com/php-forge/vite) when the application uses Vite:
+
+```shell
+composer require php-forge/vite:^0.5
+```
+
+The application owns its Vite mode and entrypoints. Define the native `PHPForge\Vite\Vite` service directly.
 
 Production example:
 
@@ -220,6 +237,46 @@ return [
 
 React applications may pass an application-owned `InlineModuleProviderInterface` implementation to
 `DevelopmentConfiguration::create()` for the React Refresh preamble. Vue applications do not need a preamble.
+
+Render the resolved assets from an application-owned root view. Hand the service to the view through
+`WebView::setParameter()` during bootstrap, or through the `$viewData` argument of `Inertia::render()`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use PHPForge\Vite\Html\HtmlRenderer;
+use PHPForge\Vite\Vite;
+use Yiisoft\View\WebView;
+
+/**
+ * @var string $id
+ * @var string $pageJson
+ * @var Vite $vite
+ * @var WebView $this
+ */
+$this->beginPage();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <?php $this->head() ?>
+    <?= HtmlRenderer::create()->render($vite->resolve()) ?>
+</head>
+<body>
+<?php $this->beginBody() ?>
+    <script data-page="<?= $id ?>" type="application/json"><?= $pageJson ?></script>
+    <div id="<?= $id ?>"></div>
+<?php $this->endBody() ?>
+</body>
+</html>
+<?php $this->endPage();
+```
+
+Point the `rootView` parameter at that file. Custom root views must call `beginPage()` and `endPage()`; the head and
+body placeholders are only substituted between those calls.
 
 ## Rendering pages
 
@@ -276,8 +333,8 @@ Session flash data is emitted only in the page-level `flash` field so it cannot 
 - `share()`, `getShared()`, `flushShared()`, and `reset()`.
 - Immutable `with*()` methods for service configuration.
 
-All page and prop value objects come directly from `php-forge/inertia`. Vite configuration, resolution, and HTML asset
-rendering come directly from `php-forge/vite`; there is no Yii-specific Vite facade or metadata wrapper.
+All page and prop value objects come directly from `php-forge/inertia`. The adapter owns no asset abstraction: tags
+are registered on `Yiisoft\View\WebView` or rendered by an application-owned root view.
 
 Adapter-owned exception text is centralized in `Yii3\Inertia\Exception\Message`. Exceptions from
 `php-forge/inertia`, Yii View, and other dependencies retain their native types and messages.

@@ -5,14 +5,24 @@ declare(strict_types=1);
 namespace Yii3\Inertia;
 
 use PHPForge\Inertia\Page;
-use PHPForge\Vite\Html\HtmlRenderer;
-use PHPForge\Vite\Vite;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Json\Json;
 use Yiisoft\View\WebView;
 
 /**
- * Renders the common initial Inertia HTML document.
+ * Renders the initial Inertia HTML document through the application web view.
+ *
+ * Asset tags are an application concern. Register them on the shared {@see WebView} before the response is rendered,
+ * or replace the root view entirely; the default root view marks Yii's head and body placeholders so registered
+ * stylesheets, scripts, and links are injected during {@see WebView::endPage()}.
+ *
+ * Usage example:
+ * ```php
+ * $view->registerCssFile('/build/app.css');
+ * $view->registerJsFile('/build/app.js', options: ['type' => 'module']);
+ *
+ * $html = $renderer->render($page, ['activeMenu' => 'dashboard']);
+ * ```
  */
 final class RootViewRenderer
 {
@@ -25,7 +35,6 @@ final class RootViewRenderer
     public function __construct(
         private readonly Aliases $aliases,
         private readonly WebView $view,
-        private readonly Vite $vite,
     ) {}
 
     /**
@@ -44,7 +53,6 @@ final class RootViewRenderer
                 'title' => $this->title,
                 'page' => $page,
                 'pageJson' => Json::htmlEncode($page),
-                'viteTags' => HtmlRenderer::create()->render($this->vite->resolve()),
             ],
         );
     }
