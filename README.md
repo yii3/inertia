@@ -251,24 +251,30 @@ use PHPForge\Vite\Vite;
 use Yiisoft\View\WebView;
 
 /**
+ * @var string $charset
  * @var string $id
+ * @var string $language
  * @var string $pageJson
+ * @var string $title
  * @var Vite $vite
  * @var WebView $this
  */
+$encode = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, $charset);
+
 $this->beginPage();
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $encode($language) ?>">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?= $encode($charset) ?>">
+    <title data-inertia><?= $encode($title) ?></title>
     <?php $this->head() ?>
     <?= HtmlRenderer::create()->render($vite->resolve()) ?>
 </head>
 <body>
 <?php $this->beginBody() ?>
-    <script data-page="<?= $id ?>" type="application/json"><?= $pageJson ?></script>
-    <div id="<?= $id ?>"></div>
+    <script data-page="<?= $encode($id) ?>" type="application/json"><?= $pageJson ?></script>
+    <div id="<?= $encode($id) ?>"></div>
 <?php $this->endBody() ?>
 </body>
 </html>
