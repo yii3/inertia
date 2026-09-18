@@ -6,8 +6,6 @@ namespace Yii3\Inertia\Tests\Support;
 
 use Closure;
 use HttpSoft\Message\{ResponseFactory, StreamFactory};
-use PHPForge\Vite\Configuration\DevelopmentConfiguration;
-use PHPForge\Vite\Vite;
 use Psr\Http\Message\ServerRequestInterface;
 use Yii3\Inertia\{Inertia, ResolvedPageObserverInterface, RootViewRenderer};
 use Yiisoft\Aliases\Aliases;
@@ -47,17 +45,9 @@ final class ServiceFactory
 
     public static function createRootViewRenderer(): RootViewRenderer
     {
-        $aliases = new Aliases();
-
-        $vite = Vite::create(
-            DevelopmentConfiguration::create('http://localhost:5173'),
-            entrypoints: ['resources/js/app.js'],
-        );
-
         $rootViewRenderer = new RootViewRenderer(
-            aliases: $aliases,
+            aliases: new Aliases(),
             view: new WebView(),
-            vite: $vite,
         );
 
         $renderer = $rootViewRenderer
