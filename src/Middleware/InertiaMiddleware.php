@@ -13,8 +13,21 @@ use Yii3\Inertia\Inertia;
  */
 final readonly class InertiaMiddleware implements MiddlewareInterface
 {
+    /**
+     * Creates a new instance.
+     *
+     * @param Inertia $inertia Adapter whose request state is isolated and whose responses are normalized.
+     */
     public function __construct(private Inertia $inertia) {}
 
+    /**
+     * Restores the configured shared props around the inner handler and normalizes the response it returns.
+     *
+     * @param ServerRequestInterface $request Request passed to the inner handler.
+     * @param RequestHandlerInterface $handler Inner handler producing the response.
+     *
+     * @return ResponseInterface Response carrying the protocol status code and headers.
+     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $this->inertia->reset();

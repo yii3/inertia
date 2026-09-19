@@ -17,6 +17,14 @@ use function substr;
  */
 final readonly class RequestContextFactory
 {
+    /**
+     * Expands a root-relative path into an absolute URL built from the request origin.
+     *
+     * @param ServerRequestInterface $request Request supplying the scheme and authority of the origin.
+     * @param string $url URL to expand; absolute and protocol-relative URLs are returned unchanged.
+     *
+     * @return string Absolute URL, or the original URL when no expansion applies.
+     */
     public function absoluteUrl(ServerRequestInterface $request, string $url): string
     {
         if (!str_starts_with($url, '/') || str_starts_with($url, '//')) {
@@ -30,6 +38,13 @@ final readonly class RequestContextFactory
         return "{$origin}{$url}";
     }
 
+    /**
+     * Creates a protocol request context from a PSR-7 server request.
+     *
+     * @param ServerRequestInterface $request Request supplying the method, URI, and headers.
+     *
+     * @return RequestContext Context carrying the method, relative URL, absolute URL, and flattened headers.
+     */
     public function create(ServerRequestInterface $request): RequestContext
     {
         $headers = [];

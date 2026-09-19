@@ -11,5 +11,10 @@ use PHPForge\Inertia\Page;
  */
 interface ResolvedPageObserverInterface
 {
+    /**
+     * Receives the page resolved by the protocol core, before the response is created.
+     *
+     * @param Page $page Resolved page carrying the component name, props, URL, and asset version.
+     */
     public function observe(Page $page): void;
 }
