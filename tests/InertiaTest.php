@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Yii3\Inertia\Tests;
 
 use HttpSoft\Message\{ResponseFactory, ServerRequest, StreamFactory};
+use PHPForge\Inertia\Exception\{InvalidPropException, Message as CoreMessage};
 use PHPForge\Inertia\Prop\Prop;
 use PHPForge\Inertia\Protocol;
-use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\{Group, TestWith};
 use PHPUnit\Framework\TestCase;
 use Yii3\Inertia\Exception\{ConfigurationException, Message};
 use Yii3\Inertia\Inertia;
@@ -480,6 +481,79 @@ final class InertiaTest extends TestCase
             'Only selected optional, always, and error props must remain.',
         );
     }
+    public function testPropFactoriesDelegateToTheCore(): void
+    {
+        $inertia = ServiceFactory::create(new ServerRequest(method: 'GET', uri: 'https://example.test/'));
+
+        self::assertSame(
+            'value',
+            $inertia->always('value')->value(),
+            'Always prop must keep its value.',
+        );
+
+        $deferred = $inertia->defer(static fn(): array => [], 'reports', true);
+
+        self::assertSame(
+            'reports',
+            $deferred->group(),
+            'Deferred prop must keep its group.',
+        );
+        self::assertTrue(
+            $deferred->rescuesFailures(),
+            'Deferred prop must keep its rescue flag.',
+        );
+
+        $defaults = $inertia->defer(static fn(): array => []);
+
+        self::assertSame(
+            'default',
+            $defaults->group(),
+            'Group must default to `default`.',
+        );
+        self::assertFalse(
+            $defaults->rescuesFailures(),
+            'Rescue must default to `false`.',
+        );
+        self::assertTrue(
+            $inertia->merge([])->appendsAtRoot(),
+            'Merge prop must append at the root by default.',
+        );
+        self::assertTrue(
+            $inertia->deepMerge([])->isDeep(),
+            'Deep merge must enable the deep flag.',
+        );
+        self::assertSame(
+            'cache-key',
+            $inertia->once(static fn(): array => [])->as('cache-key')->key(),
+            'Once prop must expose its cache key.',
+        );
+        self::assertSame(
+            [],
+            $inertia->optional(static fn(): array => [])->value()(),
+            'Optional prop must keep its callback.',
+        );
+        self::assertSame(
+            'data',
+            $inertia->scroll([], $inertia->scrollMetadata('page'))->wrapper(),
+            'Wrapper must default to `data`.',
+        );
+        self::assertSame(
+            'records',
+            $inertia->scroll([], $inertia->scrollMetadata('page', currentPage: 1), 'records')->wrapper(),
+            'Scroll prop must keep its wrapper.',
+        );
+        self::assertSame(
+            ['pageName' => 'page', 'previousPage' => 1, 'nextPage' => 3, 'currentPage' => 2, 'reset' => false],
+            $inertia->scrollMetadata('page', 1, 3, 2)->toArray(),
+            'Cursors must keep their parameter order.',
+        );
+        self::assertSame(
+            ['pageName' => 'feed', 'previousPage' => null, 'nextPage' => null, 'currentPage' => null, 'reset' => false],
+            $inertia->scrollMetadata('feed')->toArray(),
+            'Cursors must default to `null`.',
+        );
+    }
+
     public function testRendersInitialJsonWithV3PropsAndMetadata(): void
     {
         $request = (new ServerRequest(method: 'GET', uri: 'https://example.test/dashboard?tab=all'))
@@ -687,6 +761,18 @@ final class InertiaTest extends TestCase
             $inertia->getShared('app.name'),
             'Configured shared data must survive state restoration.',
         );
+    }
+
+    #[TestWith([''])]
+    #[TestWith(["feed\npage"])]
+    public function testThrowInvalidPropExceptionForInvalidScrollMetadataPageName(string $pageName): void
+    {
+        $this->expectException(InvalidPropException::class);
+        $this->expectExceptionMessage(
+            CoreMessage::SCROLL_PAGE_NAME_INVALID->getMessage(),
+        );
+
+        ServiceFactory::create(new ServerRequest(method: 'GET', uri: 'https://example.test/'))->scrollMetadata($pageName);
     }
 
     public function testVersionConflictAndLocationResponses(): void

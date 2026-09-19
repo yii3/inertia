@@ -39,7 +39,8 @@ The packages have deliberately separate responsibilities:
 
 - [`php-forge/inertia`](https://github.com/php-forge/inertia) implements the framework-agnostic protocol, page model,
   prop resolution, headers, redirects, and result objects.
-- `yii3/inertia` adapts Yii3 request, response, session, and view services to that core.
+- `yii3/inertia` adapts Yii3 request, response, session, and view services to that core, and exposes the prop
+  factories an action needs, so application code names no core class.
 
 Asset emission is an application concern. The adapter renders no script or link tags of its own; the default root view
 marks Yii's head and body placeholders, so whatever the application registers on `Yiisoft\View\WebView` reaches the
@@ -53,15 +54,16 @@ framework-specific JavaScript packages.
 - `yiisoft/session` and `yiisoft/csrf` for flash data, validation errors, and the XSRF cookie flow.
 - `yiisoft/request-body-parser` for JSON form submissions.
 - `yiisoft/view` for rendering the initial HTML document through the application web view.
-- `php-forge/inertia` for the framework-neutral Inertia protocol and prop types.
+- `php-forge/inertia`, installed by this package, for the framework-neutral Inertia protocol and prop types.
 
 ## Installation
 
-Applications should declare the adapter, the native PHP Forge packages they use, and Yii's request body parser as
-direct dependencies:
+Applications declare the adapter and Yii's request body parser as direct dependencies; the adapter installs
+`php-forge/inertia` itself. Declare that core package too only when application code type-hints its prop or page
+classes.
 
 ```shell
-composer require yii3/inertia:^0.1 php-forge/inertia:^0.5 yiisoft/request-body-parser:^1.2
+composer require yii3/inertia:^0.1 yiisoft/request-body-parser:^1.2
 ```
 
 For a local sibling checkout, add a Composer path repository:
@@ -80,7 +82,6 @@ For a local sibling checkout, add a Composer path repository:
     ],
     "require": {
         "yii3/inertia": "dev-main",
-        "php-forge/inertia": "^0.5",
         "yiisoft/request-body-parser": "^1.2"
     }
 }
@@ -133,7 +134,7 @@ Override the `yii3/inertia` parameter tree in application configuration:
 
 declare(strict_types=1);
 
-$manifest = dirname(__DIR__, 2) . '/public/build/.vite/manifest.json';
+$manifest = dirname(__DIR__, 2) . '/public/build/manifest.json';
 
 return [
     'yii3/inertia' => [
@@ -186,68 +187,16 @@ $view->registerLink(['rel' => 'modulepreload', 'href' => '/build/vendor.js']);
 Stylesheets and links land in `<head>`; scripts land at the end of `<body>` unless another position is requested.
 `yiisoft/assets` bundles work the same way through `WebView::addCssFiles()` and `WebView::addJsFiles()`.
 
-### Vite
+### Custom root view
 
-Install [`php-forge/vite`](https://github.com/php-forge/vite) when the application uses Vite:
-
-```shell
-composer require php-forge/vite:^0.5
-```
-
-The application owns its Vite mode and entrypoints. Define the native `PHPForge\Vite\Vite` service directly.
-
-Production example:
+Render assets from an application-owned root view. Hand values to the view through `WebView::setParameter()` during
+bootstrap, or through the `$viewData` argument of `Inertia::render()`:
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-use PHPForge\Vite\Configuration\ProductionConfiguration;
-use PHPForge\Vite\Vite;
-
-return [
-    Vite::class => static fn(): Vite => Vite::create(
-        ProductionConfiguration::create(
-            manifestPath: dirname(__DIR__, 2) . '/public/build/.vite/manifest.json',
-            assetBaseUrl: '/build',
-        ),
-        entrypoints: ['resources/js/app.ts'],
-    ),
-];
-```
-
-During development, register the native development service:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-use PHPForge\Vite\Configuration\DevelopmentConfiguration;
-use PHPForge\Vite\Vite;
-
-return [
-    Vite::class => static fn(): Vite => Vite::create(
-        DevelopmentConfiguration::create('http://localhost:5173'),
-        entrypoints: ['resources/js/app.ts'],
-    ),
-];
-```
-
-React applications may pass an application-owned `InlineModuleProviderInterface` implementation to
-`DevelopmentConfiguration::create()` for the React Refresh preamble. Vue applications do not need a preamble.
-
-Render the resolved assets from an application-owned root view. Hand the service to the view through
-`WebView::setParameter()` during bootstrap, or through the `$viewData` argument of `Inertia::render()`:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-use PHPForge\Vite\Html\HtmlRenderer;
-use PHPForge\Vite\Vite;
 use Yiisoft\View\WebView;
 
 /**
@@ -256,7 +205,6 @@ use Yiisoft\View\WebView;
  * @var string $language
  * @var string $pageJson
  * @var string $title
- * @var Vite $vite
  * @var WebView $this
  */
 $encode = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, $charset);
@@ -269,7 +217,6 @@ $this->beginPage();
     <meta charset="<?= $encode($charset) ?>">
     <title data-inertia><?= $encode($title) ?></title>
     <?php $this->head() ?>
-    <?= HtmlRenderer::create()->render($vite->resolve()) ?>
 </head>
 <body>
 <?php $this->beginBody() ?>
@@ -286,12 +233,10 @@ body placeholders are only substituted between those calls.
 
 ## Rendering pages
 
-Inject `Yii3\Inertia\Inertia` into an action and return its PSR-7 response. Use the native PHP Forge prop factories;
-this package does not duplicate them.
+Inject `Yii3\Inertia\Inertia` into an action and return its PSR-7 response. The service also creates every prop
+kind, so an action imports nothing from the core:
 
 ```php
-use PHPForge\Inertia\Prop\Prop;
-use PHPForge\Inertia\Prop\ScrollMetadata;
 use Psr\Http\Message\ResponseInterface;
 use Yii3\Inertia\Inertia;
 
@@ -305,18 +250,18 @@ final readonly class DashboardAction
 
         return $this->inertia->render('Dashboard', [
             'summary' => static fn(): array => ['projects' => 12],
-            'activity' => Prop::defer(static fn(): array => loadActivity(), 'dashboard', rescue: true),
-            'audit' => Prop::optional(static fn(): array => loadAudit())->once(),
-            'permissions' => Prop::always(['projects.read']),
-            'users' => Prop::merge(loadUsers())->append('data', matchOn: 'id'),
-            'messages' => Prop::merge(loadMessages())->prepend(),
-            'settings' => Prop::merge(loadSettings())->deepMerge(),
-            'countries' => Prop::once(static fn(): array => loadCountries())
+            'activity' => $this->inertia->defer(static fn(): array => loadActivity(), 'dashboard', rescue: true),
+            'audit' => $this->inertia->optional(static fn(): array => loadAudit())->once(),
+            'permissions' => $this->inertia->always(['projects.read']),
+            'users' => $this->inertia->merge(loadUsers())->append('data', matchOn: 'id'),
+            'messages' => $this->inertia->merge(loadMessages())->prepend(),
+            'settings' => $this->inertia->deepMerge(loadSettings()),
+            'countries' => $this->inertia->once(static fn(): array => loadCountries())
                 ->as('country-list')
                 ->until(3600),
-            'feed' => Prop::scroll(
+            'feed' => $this->inertia->scroll(
                 loadFeed(),
-                new ScrollMetadata('page', previousPage: null, nextPage: 2, currentPage: 1),
+                $this->inertia->scrollMetadata('page', previousPage: null, nextPage: 2, currentPage: 1),
             ),
         ]);
     }
@@ -337,9 +282,12 @@ Session flash data is emitted only in the page-level `flash` field so it cannot 
 
 - `render()`, `location()`, `isInertiaRequest()`, `getVersion()`, and `normalizeResponse()`.
 - `share()`, `getShared()`, `flushShared()`, and `reset()`.
+- The prop factories `always()`, `defer()`, `merge()`, `deepMerge()`, `once()`, `optional()`, `scroll()`, and
+  `scrollMetadata()`.
 - Immutable `with*()` methods for service configuration.
 
-All page and prop value objects come directly from `php-forge/inertia`. The adapter owns no asset abstraction: tags
+The prop factories return the prop objects of `php-forge/inertia`, so the fluent modifiers documented there apply
+to them; `scrollMetadata()` returns the immutable `ScrollMetadata` value that `scroll()` consumes. The adapter owns no asset abstraction: tags
 are registered on `Yiisoft\View\WebView` or rendered by an application-owned root view.
 
 Adapter-owned exception text is centralized in `Yii3\Inertia\Exception\Message`. Exceptions from

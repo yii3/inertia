@@ -11,8 +11,8 @@ The service recognizes `X-Inertia: true` and `X-Inertia: 1`. Partial reloads tar
 - `X-Inertia-Except-Once-Props` for values already cached by the client.
 - `X-Inertia-Version` for asset-version negotiation.
 
-`errors` and native `Prop::always()` paths survive partial filtering. Native `Prop::defer()` and `Prop::optional()`
-callbacks are not evaluated on the initial request. An only- or except-based partial reload may select an optional
+`errors` and `always()` props survive partial filtering. `defer()` and `optional()` callbacks are not evaluated on
+the initial request. An only- or except-based partial reload may select an optional
 prop. Page, shared, and version closures are invoked without arguments; request-dependent values must be resolved or
 captured explicitly by application code.
 

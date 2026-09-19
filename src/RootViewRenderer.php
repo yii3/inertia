@@ -26,19 +26,51 @@ use Yiisoft\View\WebView;
  */
 final class RootViewRenderer
 {
+    /**
+     * Character set declared by the root view.
+     */
     private string $charset = 'UTF-8';
+
+    /**
+     * Value of the `id` attribute of the root element the client application mounts on.
+     */
     private string $id = 'app';
+
+    /**
+     * Language declared by the root view.
+     */
     private string $language = 'en';
+
+    /**
+     * Alias or path of the root view template.
+     */
     private string $rootView = '@yii3InertiaViews/app.php';
+
+    /**
+     * Document title passed to the root view.
+     */
     private string $title = 'Yii3 Inertia';
 
+    /**
+     * Creates a new instance.
+     *
+     * @param Aliases $aliases Alias resolver expanding the root view path.
+     * @param WebView $view Web view rendering the root template and injecting the registered asset tags.
+     */
     public function __construct(
         private readonly Aliases $aliases,
         private readonly WebView $view,
     ) {}
 
     /**
-     * @param array<string, mixed> $viewData
+     * Renders the root view with the page payload and the document settings.
+     *
+     * @param Page $page Resolved page handed to the root view, both as an object and as its JSON encoding.
+     * @param array<string, mixed> $viewData Extra variables exposed to the root view, expanded and as `viewData`.
+     *
+     * @throws \JsonException when the page cannot be encoded as JSON.
+     *
+     * @return string Rendered HTML document.
      */
     public function render(Page $page, array $viewData = []): string
     {
@@ -57,6 +89,13 @@ final class RootViewRenderer
         );
     }
 
+    /**
+     * Returns a new instance with the specified character set.
+     *
+     * @param string $charset Character set declared by the root view.
+     *
+     * @return self New instance with the specified character set.
+     */
     public function withCharset(string $charset): self
     {
         $new = clone $this;
@@ -65,6 +104,13 @@ final class RootViewRenderer
         return $new;
     }
 
+    /**
+     * Returns a new instance with the specified root element identifier.
+     *
+     * @param string $id Value of the `id` attribute of the root element the client application mounts on.
+     *
+     * @return self New instance with the specified root element identifier.
+     */
     public function withId(string $id): self
     {
         $new = clone $this;
@@ -73,6 +119,13 @@ final class RootViewRenderer
         return $new;
     }
 
+    /**
+     * Returns a new instance with the specified language.
+     *
+     * @param string $language Language declared by the root view.
+     *
+     * @return self New instance with the specified language.
+     */
     public function withLanguage(string $language): self
     {
         $new = clone $this;
@@ -81,6 +134,13 @@ final class RootViewRenderer
         return $new;
     }
 
+    /**
+     * Returns a new instance with the specified root view template.
+     *
+     * @param string $rootView Alias or path of the root view template.
+     *
+     * @return self New instance with the specified root view template.
+     */
     public function withRootView(string $rootView): self
     {
         $new = clone $this;
@@ -89,6 +149,13 @@ final class RootViewRenderer
         return $new;
     }
 
+    /**
+     * Returns a new instance with the specified document title.
+     *
+     * @param string $title Document title passed to the root view.
+     *
+     * @return self New instance with the specified document title.
+     */
     public function withTitle(string $title): self
     {
         $new = clone $this;
