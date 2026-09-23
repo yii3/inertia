@@ -40,6 +40,7 @@
         "maglnet/composer-require-checker": "^4.1",
         "php-forge/baseline": "^0.2",
         "php-forge/coding-standard": "^0.3",
+        "php-forge/debug-core": "^0.1@dev",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0.3",
@@ -65,7 +66,8 @@
         },
         "config-plugin": {
             "params": "params.php",
-            "di-web": "di-web.php"
+            "di-web": "di-web.php",
+            "events-web": "events-web.php"
         },
         "scaffold": {
             "allowed-packages": [

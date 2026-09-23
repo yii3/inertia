@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use PHPForge\Inertia\Debug\{InertiaCollector, InertiaPanel};
 use Yiisoft\Cookies\Cookie;
 
 return [
@@ -23,6 +24,11 @@ return [
             'secure' => null,
             'sameSite' => Cookie::SAME_SITE_LAX,
         ],
+    ],
+    // Registers the Inertia panel with `yii3/debug`; inert when the debugger is not installed.
+    'yii3/debug' => [
+        'collectors' => ['inertia' => InertiaCollector::class],
+        'panels' => ['inertia' => InertiaPanel::class],
     ],
     'yiisoft/aliases' => [
         'aliases' => [
