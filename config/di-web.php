@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use PHPForge\Debug\Capture\CapturePolicy;
+use PHPForge\Inertia\Debug\InertiaCollector;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Yii3\Inertia\{Inertia, RootViewRenderer};
 use Yii3\Inertia\Middleware\CsrfTokenCookieMiddleware;
@@ -43,4 +45,11 @@ return [
     ): CsrfTokenMiddleware => (new CsrfTokenMiddleware($responseFactory, $token))
         ->withHeaderName($csrf['headerName'])
         ->withParameterName($csrf['parameterName']),
+    // Only when the debugger engine is installed: the collector then redacts with the host capture policy.
+    ...(class_exists(CapturePolicy::class) ? [
+        InertiaCollector::class => static fn(CapturePolicy $policy): InertiaCollector => new InertiaCollector(
+            $policy->redact(...),
+            $policy->redactUrl(...),
+        ),
+    ] : []),
 ];
