@@ -775,6 +775,18 @@ final class InertiaTest extends TestCase
         ServiceFactory::create(new ServerRequest(method: 'GET', uri: 'https://example.test/'))->scrollMetadata($pageName);
     }
 
+    public function testVersionClosureResolvingAnUnsupportedValueYieldsNull(): void
+    {
+        $inertia = ServiceFactory::create(new ServerRequest(method: 'GET', uri: 'https://example.test/'))
+            // @phpstan-ignore argument.type (configuration closures are not type-checked)
+            ->withVersion(static fn(): float => 1.5);
+
+        self::assertNull(
+            $inertia->getVersion(),
+            'A float version must be discarded.',
+        );
+    }
+
     public function testVersionConflictAndLocationResponses(): void
     {
         $request = (new ServerRequest(method: 'GET', uri: 'https://example.test/dashboard'))
