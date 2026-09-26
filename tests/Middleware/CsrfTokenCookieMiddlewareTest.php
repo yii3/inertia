@@ -106,6 +106,22 @@ final class CsrfTokenCookieMiddlewareTest extends TestCase
         );
     }
 
+    public function testExplicitSecureFlagOverridesHttpsDetection(): void
+    {
+        $middleware = (new CsrfTokenCookieMiddleware(new FakeCsrfToken('token')))->withSecure(false);
+
+        $response = $middleware->process(
+            new ServerRequest(method: 'GET', uri: 'https://example.test/'),
+            new CallbackHandler(static fn(): Response => new Response()),
+        );
+
+        self::assertStringNotContainsString(
+            'Secure',
+            $response->getHeaderLine('Set-Cookie'),
+            'Configured `false` must win over the HTTPS scheme.',
+        );
+    }
+
     public function testHttpsSchemeDetectionIsCaseInsensitive(): void
     {
         $uri = self::createStub(UriInterface::class);
